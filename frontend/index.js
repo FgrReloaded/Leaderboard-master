@@ -619,8 +619,6 @@ var oldData = {
     "2215500045": 0,
 }
 
-
-
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch("http://localhost:3001/data");
@@ -632,8 +630,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         })
 
+        const getResidence = await fetch("http://localhost:3001/get-residence");
+        const residenceData = await getResidence.json();
+
+        let dayScholarSolved = 0;
+        let hostellerSolved = 0;
+
+        if (residenceData.length > 0) {
+            filteredData = filteredData.map((student, idx) => {
+                return {
+                    ...student, residence: residenceData[idx]
+                }
+            })
+
+            const dayScholars = filteredData.filter((item) => item.totalSolved && !item.info && item.residence === "Day Scholars");
+            const hostellers = filteredData.filter((item) => item.totalSolved && !item.info && item.residence === "Hostellers");
+
+            dayScholarSolved = dayScholars.reduce((acc, item) => acc + item.totalSolved, 0);
+            hostellerSolved = hostellers.reduce((acc, item) => acc + item.totalSolved, 0);
+
+            console.log(dayScholarSolved, hostellerSolved);
+
+        }
+
+
+
         const leaderboardBody = document.getElementById('leaderboard-body');
         const sectionFilter = document.getElementById('section-filter');
+        const residenceFilter = document.getElementById('residence-filter');
 
         const populateSectionFilter = () => {
             const sections = [...new Set(data.map(student => student.section || 'N/A'))].sort();
@@ -643,6 +667,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 option.value = section;
                 option.textContent = section;
                 sectionFilter.appendChild(option);
+            });
+        };
+
+        const populateResidenceFilter = () => {
+            const residences = [...new Set(filteredData.map(student => student.residence || 'N/A'))].sort();
+            residenceFilter.innerHTML = '<option value="all">All Residence</option>';
+            residences.forEach(residence => {
+                const option = document.createElement('option');
+                option.value = residence;
+                option.textContent = residence;
+                residenceFilter.appendChild(option);
             });
         };
 
@@ -732,6 +767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initialize the page
         populateSectionFilter();
+        populateResidenceFilter();
         renderLeaderboard(filteredData);
 
         // Event Listeners
