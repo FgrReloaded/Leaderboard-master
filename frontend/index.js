@@ -633,27 +633,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const getResidence = await fetch("http://localhost:3001/get-residence");
         const residenceData = await getResidence.json();
 
-        let dayScholarSolved = 0;
-        let hostellerSolved = 0;
-
         if (residenceData.length > 0) {
             filteredData = filteredData.map((student, idx) => {
                 return {
                     ...student, residence: residenceData[idx]
                 }
             })
-
-            const dayScholars = filteredData.filter((item) => item.totalSolved && !item.info && item.residence === "Day Scholars");
-            const hostellers = filteredData.filter((item) => item.totalSolved && !item.info && item.residence === "Hostellers");
-
-            dayScholarSolved = dayScholars.reduce((acc, item) => acc + item.totalSolved, 0);
-            hostellerSolved = hostellers.reduce((acc, item) => acc + item.totalSolved, 0);
-
-            console.log(dayScholarSolved, hostellerSolved);
-
         }
-
-
 
         const leaderboardBody = document.getElementById('leaderboard-body');
         const sectionFilter = document.getElementById('section-filter');
@@ -773,6 +759,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Event Listeners
         sectionFilter.addEventListener('change', (e) => {
             filterData(e.target.value);
+        });
+
+        residenceFilter.addEventListener('change', (e) => {
+            const residence = e.target.value;
+            if (residence === 'all') {
+                renderLeaderboard(filteredData);
+            } else {
+                const filteredResidenceData = filteredData.filter(student => student.residence === residence);
+                renderLeaderboard(filteredResidenceData);
+            }
         });
 
         document.getElementById('export-btn').addEventListener('click', () => {
